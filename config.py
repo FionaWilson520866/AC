@@ -30,9 +30,13 @@ class Config(object):
     
     
     # default caption 
-    DEF_CAP = """<blockquote>{file_name} ||https://t.me/i_am_bittu||</blockquote>"""
+    # DEF_CAP = """<blockquote>{file_name} ||https://t.me/i_am_bittu||</blockquote>"""
     SET_CPT = """Exam: <code>/set_caption {file_name}</code>
     
 ||https://t.me/PW_BOT_HELP/2||"""
+    DEF_CAP  = """<b>{file_name}</b>
+
+<blockquote>⚡️𝐉𝐎𝐈𝐍 𝐁𝐀𝐂𝐊𝐔𝐏 - @Techshyam007
+⚡️𝐉𝐎𝐈𝐍 𝐓𝐞𝐜𝐡𝐬𝐡𝐲𝐚𝐦 - @techshyaam</blockquote>"""
 
 
