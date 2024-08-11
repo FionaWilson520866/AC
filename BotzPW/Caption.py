@@ -7,9 +7,7 @@ from pyrogram.errors import FloodWait
 
 
 
-
-
-@Client.on_message(filters.private & filters.user(Config.ADMIN)  & filters.command(["rknusers"]))
+@Client.on_message(filters.private & filters.user(Config.ADMIN)  & filters.command(["status"]))
 async def all_db_users_here(client, message):
     start_t = time.time()
     rkn = await message.reply_text("Processing...")
@@ -105,6 +103,29 @@ async def delCaption(_, msg):
         await rkn.delete()
         return
 
+def clean_text(text):
+    return (
+        re.sub(r"@\w+\s*", "", text)
+        .replace("_", " ")
+        # .replace("[", "")
+        # .replace("]", "")
+        .replace("mkv", "")
+        .replace("mp4", "")
+        .replace("mov", "")
+        .replace(".", " ")
+        .replace("~", " ")
+        # .replace("ESubs", " ")
+        # .replace(")", "")
+        # .replace("(", "")
+        # .replace("Dual", "")
+        # .replace("VF", "")
+        # .replace("10bit", "")
+        # .replace("HEVC", "")
+        # .replace("NF", "")
+        .replace("    ", " ")
+        .replace("   ", " ")
+        .replace("  ", " ")
+    )
 
 @Client.on_message(filters.channel)
 async def auto_edit_caption(bot, message):
@@ -113,40 +134,31 @@ async def auto_edit_caption(bot, message):
         for file_type in ("video", "audio", "document", "voice"):
             obj = getattr(message, file_type, None)
             if obj and hasattr(obj, "file_name"):
-                file_name = obj.file_name
-                file_name = (
-                    re.sub(r"@\w+\s*", "", file_name)
-                    .replace("_", " ")
-                    # .replace("[", "")
-                    # .replace("]", "")
-                    .replace("mkv", "")
-                    .replace("mp4", "")
-                    .replace("mov", "")
-                    .replace(".", " ")
-                    # .replace(")", "")
-                    # .replace("(", "")
-                    # .replace("Dual", "")
-                    # .replace("VF", "")
-                    # .replace("10bit", "")
-                    # .replace("HEVC", "")
-                    # .replace("NF", "")
-                    .replace("    ", " ")
-                    .replace("   ", " ")
-                    .replace("  ", " ")
-                    # .replace("", "")
-                )
+                file_name = clean_text(obj.file_name)
+                file_caption = clean_text(message.caption) if message.caption else None
+
+                # Fetch the custom caption set for the channel
                 cap_dets = await chnl_ids.find_one({"chnl_id": chnl_id})
                 try:
                     if cap_dets:
                         cap = cap_dets["caption"]
-                        replaced_caption = cap.format(file_name=file_name)
+                        if "{file_name}" in cap and file_name:
+                            replaced_caption = cap.format(file_name=file_name)
+                        elif "{file_caption}" in cap and file_caption:
+                            replaced_caption = cap.format(file_caption=file_caption)
+                        else:
+                            replaced_caption = cap
+                        
                         await message.edit(replaced_caption)
                     else:
-                        replaced_caption = Config.DEF_CAP.format(file_name=file_name)
+                        # Default caption if no custom caption is set
+                        if file_caption:
+                            replaced_caption = Config.DEF_CAP.format(file_caption=file_caption)
+                        else:
+                            replaced_caption = Config.DEF_CAP.format(file_name=file_name)
+                        
                         await message.edit(replaced_caption)
                 except FloodWait as e:
                     await asyncio.sleep(e.x)
                     continue
     return
-
-
